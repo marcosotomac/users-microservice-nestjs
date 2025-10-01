@@ -1,0 +1,67 @@
+{
+  "id": "ecommerce-api-environment",
+  "name": "E-commerce API Environment",
+  "values": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "URL base de la API local",
+      "enabled": true
+    },
+    {
+      "key": "base_url_production",
+      "value": "https://your-domain.com",
+      "description": "URL base de la API en producción",
+      "enabled": false
+    },
+    {
+      "key": "base_url_aws",
+      "value": "http://your-ec2-public-ip",
+      "description": "URL base de la API en AWS EC2",
+      "enabled": false
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "description": "Token JWT para autenticación (se llena automáticamente)",
+      "enabled": true
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "description": "ID del usuario actual (se llena automáticamente)",
+      "enabled": true
+    },
+    {
+      "key": "user_email",
+      "value": "",
+      "description": "Email del usuario actual (se llena automáticamente)",
+      "enabled": true
+    },
+    {
+      "key": "address_id",
+      "value": "",
+      "description": "ID de la dirección principal (se llena automáticamente)",
+      "enabled": true
+    },
+    {
+      "key": "address_id_2",
+      "value": "",
+      "description": "ID de la segunda dirección (se llena automáticamente)",
+      "enabled": true
+    },
+    {
+      "key": "test_email",
+      "value": "test@example.com",
+      "description": "Email fijo para testing",
+      "enabled": true
+    },
+    {
+      "key": "test_password",
+      "value": "password123",
+      "description": "Contraseña fija para testing",
+      "enabled": true
+    }
+  ],
+  "_postman_variable_scope": "environment"
+}

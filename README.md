@@ -1,23 +1,263 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# 🛒 E-commerce Microservice - Users & Addresses
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Un microservicio de e-commerce construido con **NestJS**, **TypeScript**, **PostgreSQL** y **Docker**. Incluye autenticación JWT, gestión de usuarios y direcciones, y está preparado para despliegue en AWS.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
+## ✨ Características
+
+- 🔐 **Autenticación JWT** completa
+- 👤 **Gestión de usuarios** con perfiles
+- 📍 **Sistema de direcciones** con dirección por defecto
+- 🐘 **PostgreSQL** como base de datos
+- 🐳 **Docker** containerizado
+- ☁️ **Despliegue en AWS** (EC2, RDS, CloudFormation)
+- 📝 **Validación completa** con class-validator
+- 🧪 **Tests incluidos** (unitarios y e2e)
+
+## 🏗️ Arquitectura
+
+### Base de Datos
+
+```sql
+-- Usuarios
+users (
+  id: UUID PRIMARY KEY,
+  email: VARCHAR UNIQUE,
+  password_hash: VARCHAR,
+  full_name: VARCHAR,
+  created_at: TIMESTAMP
+)
+
+-- Direcciones
+addresses (
+  id: UUID PRIMARY KEY,
+  user_id: UUID (FK → users.id),
+  line1: VARCHAR,
+  city: VARCHAR,
+  country: VARCHAR,
+  is_default: BOOLEAN
+)
+```
+
+### Endpoints API
+
+#### 🔐 Autenticación
+
+- `POST /auth/register` - Registrar nuevo usuario
+- `POST /auth/login` - Iniciar sesión y obtener JWT
+
+#### 👤 Usuarios
+
+- `GET /users/me` - Obtener perfil del usuario autenticado
+
+#### 📍 Direcciones
+
+- `POST /addresses` - Crear nueva dirección
+- `GET /addresses` - Listar direcciones del usuario
+- `PATCH /addresses/:id` - Actualizar dirección
+- `DELETE /addresses/:id` - Eliminar dirección
+
+## 🚀 Inicio Rápido
+
+### Prerrequisitos
+
+- Docker y Docker Compose
+- Node.js 18+ (opcional, para desarrollo local)
+
+### Instalación y Ejecución
+
+1. **Clonar el repositorio**
+
+   ```bash
+   git clone https://github.com/marcosotomac/users-microservice-nestjs.git
+   cd users-microservice-nestjs
+   ```
+
+2. **Ejecutar con Docker (Recomendado)**
+
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Verificar que esté corriendo**
+   ```bash
+   curl http://localhost:3000
+   ```
+
+### Desarrollo Local
+
+```bash
+# Instalar dependencias
+npm install
+
+# Ejecutar en modo desarrollo
+npm run start:dev
+
+# Ejecutar tests
+npm run test:e2e
+```
+
+## 🧪 Testing con Postman
+
+Importa la colección de Postman incluida:
+
+1. Abre Postman
+2. Importa `postman-collection.json`
+3. Importa `postman-environment.json`
+4. Selecciona el entorno "E-commerce API Environment"
+5. ¡Comienza a probar los endpoints!
+
+### Flujo de testing recomendado:
+
+1. **Register** → Crear usuario
+2. **Login** → Obtener token JWT
+3. **Get Profile** → Ver perfil
+4. **Create Address** → Agregar dirección
+5. **Get Addresses** → Listar direcciones
+6. **Update/Delete Address** → Gestionar direcciones
+
+## ☁️ Despliegue en AWS
+
+### Opción 1: Despliegue Manual
+
+1. **EC2 Instance**
+
+   ```bash
+   # Crear instancia EC2 t2.micro con Ubuntu
+   # Conectar por SSH
+   ```
+
+2. **Instalar Docker en EC2**
+
+   ```bash
+   sudo apt update
+   sudo apt install docker.io docker-compose
+   sudo systemctl start docker
+   sudo usermod -aG docker ubuntu
+   ```
+
+3. **RDS PostgreSQL**
+   - Crear instancia RDS PostgreSQL
+   - Configurar security groups
+   - Obtener connection string
+
+4. **Desplegar aplicación**
+   ```bash
+   git clone <tu-repo>
+   cd users-microservice-nestjs
+   docker-compose up -d
+   ```
+
+### Opción 2: CloudFormation (Recomendado para Academy)
+
+Usa el template `cloudformation-template.yml` incluido:
+
+```bash
+aws cloudformation create-stack \
+  --stack-name ecommerce-microservice \
+  --template-body file://cloudformation-template.yml \
+  --parameters ParameterKey=KeyName,ParameterValue=tu-key-pair
+```
+
+### Variables de Entorno para Producción
+
+```env
+DATABASE_URL=postgresql://user:password@rds-endpoint:5432/dbname
+JWT_SECRET=tu-jwt-secret-super-seguro
+NODE_ENV=production
+```
+
+## 🐳 Docker Configuration
+
+### Servicios incluidos:
+
+- **app**: Aplicación NestJS
+- **db**: PostgreSQL 15
+- **nginx**: Reverse proxy (opcional)
+
+### Comandos útiles:
+
+```bash
+# Ver logs
+docker-compose logs -f app
+
+# Ejecutar comandos en el contenedor
+docker-compose exec app npm run test
+
+# Reiniciar servicios
+docker-compose restart
+
+# Limpiar todo
+docker-compose down -v
+```
+
+## 📦 Dependencias Principales
+
+- **@nestjs/core**: Framework principal
+- **@nestjs/typeorm**: ORM para TypeORM
+- **@nestjs/jwt**: Autenticación JWT
+- **@nestjs/passport**: Estrategias de autenticación
+- **bcrypt**: Hashing de contraseñas
+- **class-validator**: Validación de DTOs
+- **pg**: Driver PostgreSQL
+- **typeorm**: ORM
+
+## 🧪 Tests
+
+```bash
+# Tests unitarios
+npm run test
+
+# Tests e2e
+npm run test:e2e
+
+# Cobertura
+npm run test:cov
+```
+
+## 🔒 Seguridad
+
+- Contraseñas hasheadas con bcrypt
+- JWT tokens con expiración
+- Validación de entrada con class-validator
+- CORS configurado
+- Rate limiting (implementable)
+
+## 📈 Monitoreo
+
+Para producción, considera agregar:
+
+- **PM2** para gestión de procesos
+- **Winston** para logging
+- **Health checks** endpoints
+- **Metrics** con Prometheus
+
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea tu rama (`git checkout -b feature/AmazingFeature`)
+3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## 👨‍💻 Autor
+
+**Marcos Otomaceda** - [GitHub](https://github.com/marcosotomac)
+
+## 🙏 Agradecimientos
+
+- [NestJS](https://nestjs.com/) - Framework increíble
+- [TypeORM](https://typeorm.io/) - ORM poderoso
+- [PostgreSQL](https://postgresql.org/) - Base de datos robusta
+- Comunidad de NestJS por la documentación y soporte
+
+---
+
+⭐ Si te gusta este proyecto, ¡dale una estrella!
+
   <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
   [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
 

@@ -1,0 +1,1027 @@
+{
+  "info": {
+    "name": "E-commerce API - NestJS",
+    "description": "API completa para sistema de e-commerce con autenticación JWT, gestión de usuarios y direcciones",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "description": "Endpoints de autenticación: registro, login y perfil de usuario",
+      "item": [
+        {
+          "name": "Register User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Guardar token automáticamente",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.access_token) {",
+                  "        pm.environment.set('jwt_token', response.access_token);",
+                  "        pm.environment.set('user_id', response.user.id);",
+                  "        pm.environment.set('user_email', response.user.email);",
+                  "        console.log('Token guardado:', response.access_token);",
+                  "    }",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has access_token', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('access_token');",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "});",
+                  "",
+                  "pm.test('User has required fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.user).to.have.property('id');",
+                  "    pm.expect(jsonData.user).to.have.property('email');",
+                  "    pm.expect(jsonData.user).to.have.property('full_name');",
+                  "    pm.expect(jsonData.user).to.not.have.property('password_hash');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"{{$randomEmail}}\",\n    \"password\": \"password123\",\n    \"full_name\": \"{{$randomFirstName}} {{$randomLastName}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Registra un nuevo usuario en el sistema. Automáticamente guarda el JWT token y user_id en las variables de entorno."
+          },
+          "response": []
+        },
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Guardar token automáticamente",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.access_token) {",
+                  "        pm.environment.set('jwt_token', response.access_token);",
+                  "        pm.environment.set('user_id', response.user.id);",
+                  "        console.log('Login exitoso, token guardado');",
+                  "    }",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has access_token and user', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('access_token');",
+                  "    pm.expect(jsonData).to.have.property('user');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Inicia sesión con credenciales existentes. Automáticamente guarda el JWT token."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Profile has user data', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.have.property('full_name');",
+                  "    pm.expect(jsonData).to.have.property('addresses');",
+                  "    pm.expect(jsonData).to.not.have.property('password_hash');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{jwt_token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Obtiene el perfil del usuario autenticado incluyendo sus direcciones. Requiere JWT token."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Profile - Unauthorized",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401 Unauthorized', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Response has error message', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('statusCode', 401);",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/profile",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "profile"]
+            },
+            "description": "Prueba de acceso sin autenticación - debería devolver 401 Unauthorized"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users Management",
+      "description": "CRUD completo para gestión de usuarios",
+      "item": [
+        {
+          "name": "Create User (Direct)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User created successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.not.have.property('password_hash');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"direct@example.com\",\n    \"password\": \"password123\",\n    \"full_name\": \"Usuario Directo\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            },
+            "description": "Crea usuario directamente (sin JWT token) - método alternativo al registro"
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Users",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "if (pm.response.json().length > 0) {",
+                  "    pm.test('Users have required fields', function () {",
+                  "        const users = pm.response.json();",
+                  "        const firstUser = users[0];",
+                  "        pm.expect(firstUser).to.have.property('id');",
+                  "        pm.expect(firstUser).to.have.property('email');",
+                  "        pm.expect(firstUser).to.have.property('addresses');",
+                  "        pm.expect(firstUser).to.not.have.property('password_hash');",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users",
+              "host": ["{{base_url}}"],
+              "path": ["users"]
+            },
+            "description": "Obtiene todos los usuarios con sus direcciones asociadas"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User has required fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('email');",
+                  "    pm.expect(jsonData).to.have.property('addresses');",
+                  "    pm.expect(jsonData).to.not.have.property('password_hash');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            },
+            "description": "Obtiene un usuario específico por ID con sus direcciones"
+          },
+          "response": []
+        },
+        {
+          "name": "Update User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('User updated successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('full_name');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"full_name\": \"Nombre Actualizado\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["users", "{{user_id}}"]
+            },
+            "description": "Actualiza información de un usuario existente"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Success message returned', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/999",
+              "host": ["{{base_url}}"],
+              "path": ["users", "999"]
+            },
+            "description": "Elimina un usuario (cambia el ID por uno que no necesites). ⚠️ Elimina también sus direcciones por cascada."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Addresses Management",
+      "description": "CRUD completo para gestión de direcciones de usuarios",
+      "item": [
+        {
+          "name": "Create Address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Guardar ID de la dirección creada",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('address_id', response.id);",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Address created successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('user_id');",
+                  "    pm.expect(jsonData).to.have.property('line1');",
+                  "    pm.expect(jsonData).to.have.property('city');",
+                  "    pm.expect(jsonData).to.have.property('country');",
+                  "    pm.expect(jsonData).to.have.property('is_default');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"user_id\": {{user_id}},\n    \"line1\": \"{{$randomStreetAddress}}\",\n    \"city\": \"{{$randomCity}}\",\n    \"country\": \"España\",\n    \"is_default\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/addresses",
+              "host": ["{{base_url}}"],
+              "path": ["addresses"]
+            },
+            "description": "Crea una nueva dirección para un usuario. Usa datos aleatorios para testing."
+          },
+          "response": []
+        },
+        {
+          "name": "Get All Addresses",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/addresses",
+              "host": ["{{base_url}}"],
+              "path": ["addresses"]
+            },
+            "description": "Obtiene todas las direcciones del sistema con información del usuario"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Addresses by User ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.be.an('array');",
+                  "});",
+                  "",
+                  "if (pm.response.json().length > 0) {",
+                  "    pm.test('All addresses belong to user', function () {",
+                  "        const addresses = pm.response.json();",
+                  "        const expectedUserId = parseInt(pm.environment.get('user_id'));",
+                  "        addresses.forEach(address => {",
+                  "            pm.expect(address.user_id).to.equal(expectedUserId);",
+                  "        });",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/addresses/user/{{user_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["addresses", "user", "{{user_id}}"]
+            },
+            "description": "Obtiene todas las direcciones de un usuario específico"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Default Address by User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200 or 404', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});",
+                  "",
+                  "if (pm.response.code === 200) {",
+                  "    pm.test('Address is default', function () {",
+                  "        const jsonData = pm.response.json();",
+                  "        pm.expect(jsonData).to.have.property('is_default', true);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/addresses/user/{{user_id}}/default",
+              "host": ["{{base_url}}"],
+              "path": ["addresses", "user", "{{user_id}}", "default"]
+            },
+            "description": "Obtiene la dirección por defecto de un usuario"
+          },
+          "response": []
+        },
+        {
+          "name": "Get Address by ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Address has required fields', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData).to.have.property('user_id');",
+                  "    pm.expect(jsonData).to.have.property('line1');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/addresses/{{address_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["addresses", "{{address_id}}"]
+            },
+            "description": "Obtiene una dirección específica por ID"
+          },
+          "response": []
+        },
+        {
+          "name": "Update Address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Address updated successfully', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('id');",
+                  "    pm.expect(jsonData.city).to.equal('Barcelona');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"city\": \"Barcelona\",\n    \"line1\": \"Calle Actualizada 456\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/addresses/{{address_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["addresses", "{{address_id}}"]
+            },
+            "description": "Actualiza información de una dirección existente"
+          },
+          "response": []
+        },
+        {
+          "name": "Set Address as Default",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Address is now default', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('is_default', true);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/addresses/{{address_id}}/set-default",
+              "host": ["{{base_url}}"],
+              "path": ["addresses", "{{address_id}}", "set-default"]
+            },
+            "description": "Establece una dirección como predeterminada (automáticamente quita el default de otras direcciones del mismo usuario)"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Secondary Address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Guardar ID de la segunda dirección",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('address_id_2', response.id);",
+                  "}",
+                  "",
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Address is not default', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('is_default', false);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"user_id\": {{user_id}},\n    \"line1\": \"Avenida Secundaria 789\",\n    \"city\": \"Valencia\",\n    \"country\": \"España\",\n    \"is_default\": false\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/addresses",
+              "host": ["{{base_url}}"],
+              "path": ["addresses"]
+            },
+            "description": "Crea una segunda dirección (no por defecto) para probar funcionalidad múltiple"
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Address",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Success message returned', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/addresses/{{address_id_2}}",
+              "host": ["{{base_url}}"],
+              "path": ["addresses", "{{address_id_2}}"]
+            },
+            "description": "Elimina una dirección específica"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Error Handling & Validation",
+      "description": "Tests para validación y manejo de errores",
+      "item": [
+        {
+          "name": "Register - Invalid Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});",
+                  "",
+                  "pm.test('Validation error returned', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('statusCode', 400);",
+                  "    pm.expect(jsonData).to.have.property('message');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"invalid-email\",\n    \"password\": \"password123\",\n    \"full_name\": \"Test User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Test de validación con email inválido"
+          },
+          "response": []
+        },
+        {
+          "name": "Register - Short Password",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 400', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"test2@example.com\",\n    \"password\": \"123\",\n    \"full_name\": \"Test User\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "Test de validación con contraseña muy corta"
+          },
+          "response": []
+        },
+        {
+          "name": "Login - Invalid Credentials",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 401', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test('Unauthorized error returned', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('statusCode', 401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"nonexistent@example.com\",\n    \"password\": \"wrongpassword\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "Test de login con credenciales incorrectas"
+          },
+          "response": []
+        },
+        {
+          "name": "Get User - Not Found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404', function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test('Not found error returned', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('statusCode', 404);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/users/9999",
+              "host": ["{{base_url}}"],
+              "path": ["users", "9999"]
+            },
+            "description": "Test de búsqueda de usuario que no existe"
+          },
+          "response": []
+        },
+        {
+          "name": "Create Address - Invalid User ID",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 404 or 400', function () {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([404, 400]);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"user_id\": 9999,\n    \"line1\": \"Calle Falsa 123\",\n    \"city\": \"Ciudad Inexistente\",\n    \"country\": \"España\",\n    \"is_default\": true\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/addresses",
+              "host": ["{{base_url}}"],
+              "path": ["addresses"]
+            },
+            "description": "Test de creación de dirección con usuario inexistente"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "description": "Endpoints para verificar el estado del servicio",
+      "item": [
+        {
+          "name": "API Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response time is less than 500ms', function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(500);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}",
+              "host": ["{{base_url}}"]
+            },
+            "description": "Verifica que el servicio esté funcionando"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Script que se ejecuta antes de cada request",
+          "console.log('🚀 Ejecutando request a: ' + pm.request.url);",
+          "",
+          "// Verificar si tenemos las variables necesarias",
+          "if (!pm.environment.get('base_url')) {",
+          "    console.log('⚠️ No se ha configurado base_url');",
+          "}"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Script que se ejecuta después de cada request",
+          "console.log('✅ Response status: ' + pm.response.code + ' ' + pm.response.status);",
+          "console.log('⏱️ Response time: ' + pm.response.responseTime + 'ms');"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "description": "URL base de la API"
+    },
+    {
+      "key": "jwt_token",
+      "value": "",
+      "description": "Token JWT para autenticación (se llena automáticamente)"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "description": "ID del usuario actual (se llena automáticamente)"
+    },
+    {
+      "key": "user_email",
+      "value": "",
+      "description": "Email del usuario actual (se llena automáticamente)"
+    },
+    {
+      "key": "address_id",
+      "value": "",
+      "description": "ID de la dirección actual (se llena automáticamente)"
+    },
+    {
+      "key": "address_id_2",
+      "value": "",
+      "description": "ID de la segunda dirección (se llena automáticamente)"
+    }
+  ]
+}
